@@ -1,9 +1,7 @@
 import logging
-import time
 
 from make87_messages.image.compressed.image_jpeg_pb2 import ImageJPEG
-from make87_messages.text.text_plain_pb2 import PlainText
-from make87 import get_topic, PublisherTopic, topic_names
+from make87 import get_topic, PublisherTopic, topic_names, initialize
 
 import yt_dlp
 import av
@@ -52,6 +50,7 @@ def read_frames_from_stream(stream_url, start_time=0):
 
 
 def main():
+    initialize()
     topic = get_topic(name=topic_names.IMAGE_DATA)
 
     youtube_url = "https://www.youtube.com/watch?v=faUNhaRLpMc"  # Replace with the actual video URL
