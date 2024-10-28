@@ -1,7 +1,7 @@
 import logging
 
 from make87_messages.image.compressed.image_jpeg_pb2 import ImageJPEG
-from make87 import get_topic, PublisherTopic, topic_names, initialize
+from make87 import initialize, get_publisher_topic, resolve_topic_name
 
 import yt_dlp
 import av
@@ -51,9 +51,10 @@ def read_frames_from_stream(stream_url, start_time=0):
 
 def main():
     initialize()
-    topic = get_topic(name=topic_names.IMAGE_DATA)
+    topic_name = resolve_topic_name(name="IMAGE_DATA")
+    topic = get_publisher_topic(name=topic_name, message_type=ImageJPEG)
 
-    youtube_url = "https://www.youtube.com/watch?v=faUNhaRLpMc"  # Replace with the actual video URL
+    youtube_url = "https://www.youtube.com/watch?v=faUNhaRLpMc"
     stream_url = get_stream_url(youtube_url, resolution="1920x1080")
 
     if stream_url is None:
