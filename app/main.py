@@ -1,5 +1,8 @@
 import logging
+import datetime
+from typing import Tuple
 
+import numpy as np
 from make87_messages.image.compressed.image_jpeg_pb2 import ImageJPEG
 from make87 import initialize, get_publisher_topic, resolve_topic_name
 
@@ -32,7 +35,7 @@ def get_stream_url(youtube_url, resolution="1920x1080"):
         return None
 
 
-def read_frames_from_stream(stream_url, start_time=0):
+def read_frames_from_stream(stream_url, start_time=0) -> Tuple[float, np.ndarray]:
     # Open the video stream
     container = av.open(stream_url)
 
@@ -42,9 +45,7 @@ def read_frames_from_stream(stream_url, start_time=0):
     container.seek(start_time_microseconds, any_frame=False, backward=True, stream=stream)
 
     for frame in container.decode(video=0):
-        # Convert the frame to a NumPy array
-        img = frame.to_ndarray(format="bgr24")
-        yield img
+        yield frame.time, frame.to_ndarray(format="bgr24")
 
     container.close()
 
@@ -61,15 +62,16 @@ def main():
         print("Desired resolution not available.")
         exit()
 
-    for frame in read_frames_from_stream(stream_url, start_time=180):
-        ret, frame_jpeg = cv2.imencode(".jpeg", frame)
-        if not ret:
-            logging.error("Error: Could not encode frame to JPEG.")
-            break
+    start_world_datetime = datetime.datetime.now(datetime.UTC)
+    start_video_time = None
 
-        frame_jpeg_bytes = frame_jpeg.tobytes()
+    for time, frame in read_frames_from_stream(stream_url, start_time=180):
+        if start_video_time is None:
+            start_video_time = time
 
-        message = ImageJPEG(data=frame_jpeg_bytes)
+        delta_time = datetime.timedelta(seconds=time - start_video_time)
+        _, frame_jpeg = cv2.imencode(".jpeg", frame)
+        message = ImageJPEG(data=frame_jpeg.tobytes(), timestamp=start_world_datetime + delta_time)
         topic.publish(message)
 
 
