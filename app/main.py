@@ -3,6 +3,7 @@ import datetime
 from typing import Tuple
 
 import numpy as np
+from google.protobuf.internal.well_known_types import Timestamp
 from make87_messages.image.compressed.image_jpeg_pb2 import ImageJPEG
 from make87 import initialize, get_publisher_topic, resolve_topic_name
 
@@ -71,7 +72,8 @@ def main():
 
         delta_time = datetime.timedelta(seconds=time - start_video_time)
         _, frame_jpeg = cv2.imencode(".jpeg", frame)
-        message = ImageJPEG(data=frame_jpeg.tobytes(), timestamp=start_world_datetime + delta_time)
+        message = ImageJPEG(data=frame_jpeg.tobytes())
+        message.timestamp.FromDatetime(start_world_datetime + delta_time)
         topic.publish(message)
 
 
