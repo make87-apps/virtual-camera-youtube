@@ -1,15 +1,12 @@
-import logging
 import datetime
 from typing import Tuple
 
-import numpy as np
-from google.protobuf.internal.well_known_types import Timestamp
-from make87_messages.image.compressed.image_jpeg_pb2 import ImageJPEG
-from make87 import initialize, get_publisher_topic, resolve_topic_name
-
-import yt_dlp
 import av
 import cv2
+import numpy as np
+import yt_dlp
+from make87 import initialize, get_publisher, resolve_topic_name
+from make87_messages.image.compressed.image_jpeg_pb2 import ImageJPEG
 
 
 def get_stream_url(youtube_url, resolution="1920x1080"):
@@ -54,7 +51,7 @@ def read_frames_from_stream(stream_url, start_time=0) -> Tuple[float, np.ndarray
 def main():
     initialize()
     topic_name = resolve_topic_name(name="IMAGE_DATA")
-    topic = get_publisher_topic(name=topic_name, message_type=ImageJPEG)
+    topic = get_publisher(name=topic_name, message_type=ImageJPEG)
 
     youtube_url = "https://www.youtube.com/watch?v=faUNhaRLpMc"
     stream_url = get_stream_url(youtube_url, resolution="1920x1080")
