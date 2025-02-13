@@ -51,8 +51,7 @@ def read_frames_from_stream(stream_url, start_time=0) -> Tuple[float, np.ndarray
 
 def main():
     initialize()
-    topic_name = resolve_topic_name(name="IMAGE_DATA")
-    topic = get_publisher(name=topic_name, message_type=ImageJPEG)
+    topic = get_publisher(name="IMAGE_DATA", message_type=ImageJPEG)
 
     youtube_url = make87.get_config_value("YOUTUBE_URL", "https://www.youtube.com/watch?v=faUNhaRLpMc")
     stream_url = get_stream_url(youtube_url, resolution="1920x1080")
