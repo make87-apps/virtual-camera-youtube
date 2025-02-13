@@ -1,4 +1,5 @@
 import datetime
+import make87
 from typing import Tuple
 
 import av
@@ -53,7 +54,7 @@ def main():
     topic_name = resolve_topic_name(name="IMAGE_DATA")
     topic = get_publisher(name=topic_name, message_type=ImageJPEG)
 
-    youtube_url = "https://www.youtube.com/watch?v=faUNhaRLpMc"
+    youtube_url = make87.get_config_value("YOUTUBE_URL", "https://www.youtube.com/watch?v=faUNhaRLpMc")
     stream_url = get_stream_url(youtube_url, resolution="1920x1080")
 
     if stream_url is None:
@@ -70,7 +71,7 @@ def main():
         delta_time = datetime.timedelta(seconds=time - start_video_time)
         _, frame_jpeg = cv2.imencode(".jpeg", frame)
         message = ImageJPEG(data=frame_jpeg.tobytes())
-        message.timestamp.FromDatetime(start_world_datetime + delta_time)
+        message.header.timestamp.FromDatetime(start_world_datetime + delta_time)
         topic.publish(message)
 
 

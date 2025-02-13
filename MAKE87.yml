@@ -3,4 +3,9 @@ build_kit:
   version: latest
 outbound_topics:
   - name: IMAGE_DATA
-    message_type: make87_messages.image.compressed.image_jpeg.ImageJPEG
+    message_type: make87_messages.image.compressed.image_jpeg.ImageJPEG:0.0.82
+config:
+  values:
+    - name: YOUTUBE_URL
+      description: "Full URL of the YouTube video"
+      required: false
