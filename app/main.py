@@ -1,12 +1,13 @@
 import datetime
 import make87
 from typing import Tuple
+import logging
 
 import av
 import cv2
 import numpy as np
 import yt_dlp
-from make87 import initialize, get_publisher, resolve_topic_name
+from make87 import initialize, get_publisher
 from make87_messages.image.compressed.image_jpeg_pb2 import ImageJPEG
 
 
@@ -63,7 +64,7 @@ def main():
     start_world_datetime = datetime.datetime.now(datetime.UTC)
     start_video_time = None
 
-    for time, frame in read_frames_from_stream(stream_url, start_time=180):
+    for time, frame in read_frames_from_stream(stream_url, start_time=0):
         if start_video_time is None:
             start_video_time = time
 
@@ -72,6 +73,8 @@ def main():
         message = ImageJPEG(data=frame_jpeg.tobytes())
         message.header.timestamp.FromDatetime(start_world_datetime + delta_time)
         topic.publish(message)
+    else:
+        logging.info("Finished receiving frames from stream.")
 
 
 if __name__ == "__main__":
