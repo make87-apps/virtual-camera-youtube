@@ -11,10 +11,10 @@ authors = [
 dependencies = [
     "make87",
     "make87_messages",
-    "yt-dlp",
-    "opencv-python-headless",
-    "av",
-    "numpy",
+    "yt-dlp==2024.9.27",
+    "opencv-python-headless>=4.10.0.84,<5.0.0",
+    "av>=13.0.0,<14.0.0",
+    "numpy>=2.1.1,<3.0.0",
 ]
 description = "A small example package"
 readme = "README.md"

@@ -3,7 +3,7 @@ build_kit:
   version: latest
 outbound_topics:
   - name: IMAGE_DATA
-    message_type: make87_messages.image.compressed.image_jpeg.ImageJPEG:0.0.82
+    message_type: make87_messages.image.compressed.image_jpeg.ImageJPEG
 config:
   values:
     - name: YOUTUBE_URL
