@@ -54,7 +54,11 @@ def main():
     initialize()
     topic = get_publisher(name="IMAGE_DATA", message_type=ImageJPEG)
 
-    youtube_url = make87.get_config_value("YOUTUBE_URL", "https://www.youtube.com/live/s2nVwrJMSUQ")
+    youtube_url = make87.get_config_value(
+        "YOUTUBE_URL",
+        "https://www.youtube.com/live/s2nVwrJMSUQ",
+        decode=lambda x: x if x else "https://www.youtube.com/live/s2nVwrJMSUQ",
+    )
     stream_url = get_stream_url(youtube_url, resolution="1920x1080")
 
     if stream_url is None:
