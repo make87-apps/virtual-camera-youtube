@@ -3,6 +3,6 @@
 Takes a YouTube video and turns it into a stream of single images.
 Great to test image processing pipelines without requiring peripherals.
 
-Currently hard-coded to use the following video starting at 3minutes:
+Per default playing an episode of The WAN Show:
 
-https://www.youtube.com/watch?v=faUNhaRLpMc&t=180s
+[![Thumbnail of WAN Show Episode "Story Time"](https://img.youtube.com/vi/s2nVwrJMSUQ/0.jpg)](https://www.youtube.com/live/s2nVwrJMSUQ)
