@@ -9,3 +9,4 @@ config:
     - name: YOUTUBE_URL
       description: "Full URL of the YouTube video"
       required: false
+      default_value: "https://www.youtube.com/live/s2nVwrJMSUQ"
