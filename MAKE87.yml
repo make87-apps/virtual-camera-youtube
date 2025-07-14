@@ -1,12 +1,33 @@
-build_kit:
-  name: python3
-  version: latest
-outbound_topics:
-  - name: IMAGE_DATA
-    message_type: make87_messages.image.compressed.image_jpeg.ImageJPEG
+version: 1
+interfaces:
+  - name: mediamtx_http
+    protocol: http
+    servers:
+      - name: mediamtx_api
+        spec:
+          string: mediamtx_api:1.0  # copy of OpenAPI spec in schema/swagger.json
+        port:
+          name: mediamtx_api
+          protocol: HTTP
+          target_port: 9997
+  - name: mediamtx_rtsp  # served through mediamtx.yml
+    protocol: rtsp
+    servers:
+      - name: mediamtx_rtsp
+        spec:
+          string: rtsp  # no specific spec, just a placeholder for RTSP connections
+        port:
+          name: mediamtx_rtsp
+          protocol: TCP
+          target_port: 8554
 config:
-  values:
-    - name: YOUTUBE_URL
-      description: "Full URL of the YouTube video"
-      required: false
-      default_value: "https://www.youtube.com/live/s2nVwrJMSUQ"
+  type: object
+  properties:
+    stream_url:
+      type: string
+      description: URL of the YouTube tream to be processed.
+  required:
+    - stream_url
+build:
+  custom:
+    dockerfile: build_kit/Dockerfile

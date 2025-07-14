@@ -1,0 +1,50 @@
+###############################################
+# Global settings
+
+logLevel: info
+logDestinations: [ stdout ]
+
+readTimeout: 10s
+writeTimeout: 60s
+writeQueueSize: 512
+udpMaxPayloadSize: 1472
+
+authMethod: internal
+authInternalUsers:
+  - user: any
+    pass:
+    ips: [ ]
+    permissions:
+      - action: read
+      - action: api
+  - user: any
+    pass:
+    ips: [ "127.0.0.1", "::1" ]
+    permissions:
+      - action: api
+      - action: metrics
+      - action: pprof
+
+###############################################
+# Protocol enablement
+
+rtsp: yes
+rtspTransports: [ tcp ]
+rtspAddress: :8554
+
+api: yes
+apiAddress: :9997
+
+# disable protocols we’re not using
+rtmp: no
+hls: no
+webrtc: no
+srt: no
+metrics: no
+pprof: no
+playback: no
+
+###############################################
+# Path definitions
+
+paths: { }
