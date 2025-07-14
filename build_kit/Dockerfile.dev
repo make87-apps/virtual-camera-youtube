@@ -1,15 +1,22 @@
-FROM ghcr.io/make87/ffmpeg:7.1.1
+FROM ghcr.io/make87/rust:1-bookworm AS build-rust-base-image
 COPY --from=bluenviron/mediamtx:1.12.2 /mediamtx /mediamtx
 
+# Set PATH after installation
+ENV PATH="/usr/local/rustup/bin:/usr/local/cargo/bin:${PATH}"
+# Create a profile script to export PATH
+RUN echo 'export PATH="/usr/local/rustup/bin:/usr/local/cargo/bin:${PATH}"' > /etc/profile.d/rust.sh
+# Symlink cargo and rustup to /usr/local/bin
+RUN ln -s /usr/local/cargo/bin/cargo /usr/local/bin/cargo \
+    && ln -s /usr/local/cargo/bin/rustup /usr/local/bin/rustup
+
+# Ensure Rust Analyzer is installed via rustup
+RUN rustup component add rust-analyzer
+
 RUN apt-get update \
-    && apt-get install --no-install-suggests --no-install-recommends -y \
+    && apt install --no-install-suggests --no-install-recommends -y \
         build-essential \
-        python3-pip  \
-        python3  \
-        libpython3-dev \
-        python3-venv \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+        cmake \
+        nasm
 
 ############################################################################################################
 
@@ -18,23 +25,23 @@ RUN apt-get update \
 ############################################################################################################
 
 RUN apt-get update \
-    && apt-get install --no-install-suggests --no-install-recommends -y  \
+    && apt-get install -y --no-install-suggests --no-install-recommends \
       openssh-server \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+      sudo
 
 # SSH setup
-RUN mkdir -p /var/run/sshd \
-    && mkdir -p /root/.ssh \
-    && chmod 700 /root/.ssh
+RUN mkdir -p /var/run/sshd && \
+    mkdir -p /root/.ssh && \
+    chmod 700 /root/.ssh
 
 # Ensure SSH uses the authorized_keys file for authentication
-RUN echo "PubkeyAuthentication yes" >> /etc/ssh/sshd_config \
-    && echo "PasswordAuthentication no" >> /etc/ssh/sshd_config \
-    && echo "PermitRootLogin yes" >> /etc/ssh/sshd_config \
-    && echo "ChallengeResponseAuthentication no" >> /etc/ssh/sshd_config \
-    && echo "UsePAM no" >> /etc/ssh/sshd_config \
-    && echo "AuthorizedKeysFile /root/.ssh/authorized_keys" >> /etc/ssh/sshd_config
+RUN sed -i '/^AuthorizedKeysFile /d' /etc/ssh/sshd_config && \
+    echo "PubkeyAuthentication yes" >> /etc/ssh/sshd_config && \
+    echo "PasswordAuthentication no" >> /etc/ssh/sshd_config && \
+    echo "PermitRootLogin yes" >> /etc/ssh/sshd_config && \
+    echo "ChallengeResponseAuthentication no" >> /etc/ssh/sshd_config && \
+    echo "UsePAM no" >> /etc/ssh/sshd_config && \
+    echo "AuthorizedKeysFile /root/.ssh/authorized_keys" >> /etc/ssh/sshd_config
 
 EXPOSE 22
 
@@ -75,6 +82,7 @@ RUN if [ -z "${RELEASE_TAG}" ]; then \
     && cp ${OPENVSCODE_SERVER_ROOT}/bin/remote-cli/openvscode-server ${OPENVSCODE_SERVER_ROOT}/bin/remote-cli/code \
     && rm -f ${RELEASE_TAG}-linux-${arch}.tar.gz
 
+
 # Give permissions to use the /tmp directory. Required for vsix plugin install
 RUN chmod 1777 /tmp
 
@@ -89,21 +97,37 @@ ENV LANG=C.UTF-8 \
     GIT_EDITOR="code --wait" \
     OPENVSCODE_SERVER_ROOT=${OPENVSCODE_SERVER_ROOT}
 
-# Install the Python extension
-RUN ${OPENVSCODE_SERVER_ROOT}/bin/openvscode-server --install-extension ms-python.python
-RUN ${OPENVSCODE_SERVER_ROOT}/bin/openvscode-server --install-extension charliermarsh.ruff
 RUN ${OPENVSCODE_SERVER_ROOT}/bin/openvscode-server --install-extension amerey.blackplusplus
+
+# Install common Rust extentions
+RUN ${OPENVSCODE_SERVER_ROOT}/bin/openvscode-server --install-extension serayuzgur.crates
+RUN ${OPENVSCODE_SERVER_ROOT}/bin/openvscode-server --install-extension rust-lang.rust-analyzer
+RUN ${OPENVSCODE_SERVER_ROOT}/bin/openvscode-server --install-extension vadimcn.vscode-lldb
+RUN ${OPENVSCODE_SERVER_ROOT}/bin/openvscode-server --install-extension bungcip.better-toml
+
 COPY build_kit/training-tweaks-0.0.3.vsix training-tweaks-0.0.3.vsix
 RUN ${OPENVSCODE_SERVER_ROOT}/bin/openvscode-server --install-extension training-tweaks-0.0.3.vsix || true
 COPY build_kit/custom-settings-extension.js /home/workspace/.openvscode-server/extensions/spkane.training-tweaks-0.0.3/out/extension.js
 COPY build_kit/custom-remote-settings.json /home/workspace/.openvscode-server/data/Machine/settings.json
 
+# Symlink cargo and rustup to /usr/local/bin
+RUN ln -s /usr/local/cargo/bin/rust-analyzer /usr/local/bin/rust-analyzer
+
+
+# Validate rust-analyzer
+RUN rust-analyzer --version || echo "rust-analyzer installation failed"
+
 # Default exposed port if none is specified
 EXPOSE 3000
 
-# Copy the startup script
-COPY build_kit/entrypoint-dev.sh /entrypoint-dev.sh
+############################################################################################################
+
+# Setup the entrypoint
+
+############################################################################################################
+
+COPY entrypoint-dev.sh /entrypoint-dev.sh
 RUN chmod +x /entrypoint-dev.sh
 
-# Set the default command to execute the startup script
+
 ENTRYPOINT ["/entrypoint-dev.sh", "/home/state/code"]
