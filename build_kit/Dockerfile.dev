@@ -126,7 +126,7 @@ EXPOSE 3000
 
 ############################################################################################################
 
-COPY entrypoint-dev.sh /entrypoint-dev.sh
+COPY build_kit/entrypoint-dev.sh /entrypoint-dev.sh
 RUN chmod +x /entrypoint-dev.sh
 
 
